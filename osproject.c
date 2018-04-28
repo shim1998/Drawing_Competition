@@ -10,7 +10,7 @@
 
 sem_t teacher;//mutex
 sem_t SN[3];//Students array
-int resources[]={0,0,0};//paper,sharpener and eraser
+int resources[]={0,0,0};//pencil,eraser and sharpener
 int S[3][3]={{0,1,1},//student 1
              {1,0,1},//student 2
              {1,1,0}};//student 3
@@ -71,7 +71,7 @@ void randomitem(){                       //generates random item
 }
 
 
-int main(){                              //O(T)=n^(21)
+int main(){                              
     pthread_t thread_id[3];
     printf("Welcome to Drawing Competition Problem\n");
     sem_init(&teacher,0,1);
