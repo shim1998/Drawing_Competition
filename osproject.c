@@ -7,49 +7,53 @@
 #include<semaphore.h>
 
 //Algorithm followed: Similar to Dining Philospher's Problem using Semaphores/Moderator
-
 sem_t teacher;//mutex
 sem_t SN[3];//Students array
-int resources[]={0,0,0};//pencil,eraser and sharpener
+int resources[]={0,0,0};//pencil,sharpener and eraser
 int S[3][3]={{0,1,1},//student 1
              {1,0,1},//student 2
-             {1,1,0}};//student 3
-int flag[]={0,0,0};
+             {1,0,1}};//student 3
+int studentfull[]={0,0,0};
 int x,y,i;
 
 int resourcefull(){
-   int xflag=1;
+   int flag=1;
    printf("\n");
    for(i=0;i<3;i++){
-      if(flag[i]==0){
-        xflag=0;
+      if(studentfull[i]==0){
+        flag=0;
       }
    }
-   return xflag;
+   return flag;
 }
 
 void *takeitem(){                      //each student check if they require this item if yes the student has completed the work
     sem_wait(&teacher);
     sleep(1);
-    if(flag[i]==0)
+    //printf("\n%d",studentfull[i]);
+    if(studentfull[i]!=1)
         printf("\nStudent %d is trying to access",i+1);
         sleep(1);
-        if(S[i][y]!=resources[y] && flag[y]==0){
+        if(S[i][y]!=resources[y]){
                 sem_wait(&SN[i]);
                 printf("\nStudent %d needs the item",i+1);
-                flag[y]=1;
                 sleep(1);
                 printf("\nStudent %d has completed his work",i+1);
                 sleep(1);
+                printf("\nStudent %d has put back the item",i+1);
+                studentfull[i]=1;
+                sleep(1);
                 sem_post(&SN[i]);
             }
-            else{
+         else{
                 sleep(1);
+                sem_wait(&SN[i]);
                 printf("\nStudent %d doesn't need it",i+1);
+                sem_post(&SN[i]);
+                sleep(1);
             }
     sem_post(&teacher);
 }
-
 
 void randomitem(){                       //generates random item
     if(x==0){                            //pencil
@@ -57,21 +61,21 @@ void randomitem(){                       //generates random item
         y=0;
         printf("pencil ");
      }
-     if(x==1){                           //eraser
+     if(x==1){                           //sharpener
         resources[1]=1;
         y=1;
-        printf("eraser ");
+        printf("sharpener ");
      }
-     if(x==2){                           //sharpener
+     if(x==2){                           //eraser
         resources[2]=1;
         y=2;
-        printf("sharpener ");
+        printf("eraser ");
      }
      printf("on the table\n");
 }
 
 
-int main(){                              
+int main(){                              //O(T)=n^(21)
     pthread_t thread_id[3];
     printf("Welcome to Drawing Competition Problem\n");
     sem_init(&teacher,0,1);
@@ -80,8 +84,7 @@ int main(){
     while(resourcefull()!=1){
         sleep(1);
         printf("\nTeacher has put ");
-        while(flag[x]!=0)
-            x=rand()%3;
+        x=rand()%3;
         randomitem();
         for(i=0;i<3;i++)
             pthread_create(&thread_id[i],NULL,takeitem,&S[i][0]);
